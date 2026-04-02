@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>공항 영어 단어장</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f0f4f8;
+      color: #333;
+      padding: 24px 16px;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 1.6rem;
+      margin-bottom: 8px;
+      color: #1a56db;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #666;
+      font-size: 0.9rem;
+      margin-bottom: 24px;
+    }
+
+    .filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      margin-bottom: 24px;
+    }
+
+    .filter-btn {
+      padding: 6px 16px;
+      border: 2px solid #1a56db;
+      background: white;
+      color: #1a56db;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: all 0.2s;
+    }
+
+    .filter-btn.active, .filter-btn:hover {
+      background: #1a56db;
+      color: white;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 16px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 18px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+      position: relative;
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+    }
+
+    .card .category {
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+      padding: 3px 10px;
+      border-radius: 10px;
+      display: inline-block;
+    }
+
+    .cat-checkin   { background: #dbeafe; color: #1e40af; }
+    .cat-security  { background: #fef9c3; color: #854d0e; }
+    .cat-boarding  { background: #dcfce7; color: #166534; }
+    .cat-baggage   { background: #fce7f3; color: #9d174d; }
+    .cat-customs   { background: #ede9fe; color: #5b21b6; }
+    .cat-general   { background: #f3f4f6; color: #374151; }
+
+    .card .english {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #111;
+      margin-bottom: 4px;
+    }
+
+    .card .phonetic {
+      font-size: 0.8rem;
+      color: #999;
+      margin-bottom: 8px;
+    }
+
+    .card .korean {
+      font-size: 0.95rem;
+      color: #555;
+    }
+
+    .card .example {
+      margin-top: 10px;
+      font-size: 0.82rem;
+      color: #1a56db;
+      background: #eff6ff;
+      border-left: 3px solid #1a56db;
+      padding: 6px 10px;
+      border-radius: 0 6px 6px 0;
+      display: none;
+    }
+
+    .card.open .example { display: block; }
+
+    .card .toggle-hint {
+      font-size: 0.72rem;
+      color: #aaa;
+      position: absolute;
+      bottom: 10px;
+      right: 14px;
+    }
+
+    .count {
+      text-align: center;
+      color: #888;
+      font-size: 0.85rem;
+      margin-bottom: 16px;
+    }
+
+    /* 다크모드 토글 */
+    .theme-toggle {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      z-index: 100;
+    }
+
+    .theme-toggle span {
+      font-size: 0.8rem;
+      color: #666;
+      user-select: none;
+    }
+
+    .switch {
+      position: relative;
+      width: 48px;
+      height: 26px;
+    }
+
+    .switch input { display: none; }
+
+    .slider {
+      position: absolute;
+      inset: 0;
+      background: #ccc;
+      border-radius: 26px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .slider::before {
+      content: "";
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      left: 3px;
+      top: 3px;
+      background: white;
+      border-radius: 50%;
+      transition: transform 0.3s;
+    }
+
+    .switch input:checked + .slider { background: #1a56db; }
+    .switch input:checked + .slider::before { transform: translateX(22px); }
+
+    .theme-icon { font-size: 1rem; }
+
+    /* 다크모드 스타일 */
+    body.dark {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+
+    body.dark h1 { color: #60a5fa; }
+    body.dark .subtitle { color: #94a3b8; }
+    body.dark .count { color: #64748b; }
+
+    body.dark .filter-btn {
+      border-color: #60a5fa;
+      background: #1e293b;
+      color: #60a5fa;
+    }
+
+    body.dark .filter-btn.active,
+    body.dark .filter-btn:hover {
+      background: #1d4ed8;
+      color: white;
+      border-color: #1d4ed8;
+    }
+
+    body.dark .card {
+      background: #1e293b;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    }
+
+    body.dark .card:hover {
+      box-shadow: 0 6px 16px rgba(0,0,0,0.5);
+    }
+
+    body.dark .card .english { color: #f1f5f9; }
+    body.dark .card .phonetic { color: #64748b; }
+    body.dark .card .korean { color: #94a3b8; }
+    body.dark .card .toggle-hint { color: #475569; }
+
+    body.dark .card .example {
+      color: #93c5fd;
+      background: #172554;
+      border-left-color: #3b82f6;
+    }
+
+    body.dark .cat-checkin   { background: #1e3a5f; color: #93c5fd; }
+    body.dark .cat-security  { background: #3b2f00; color: #fde68a; }
+    body.dark .cat-boarding  { background: #052e16; color: #86efac; }
+    body.dark .cat-baggage   { background: #4a0020; color: #f9a8d4; }
+    body.dark .cat-customs   { background: #2e1065; color: #c4b5fd; }
+    body.dark .cat-general   { background: #1e293b; color: #94a3b8; }
+
+    body.dark .theme-toggle span { color: #94a3b8; }
+  </style>
+</head>
+<body>
+
+<div class="theme-toggle">
+  <span class="theme-icon">☀️</span>
+  <label class="switch">
+    <input type="checkbox" id="darkToggle">
+    <span class="slider"></span>
+  </label>
+  <span class="theme-icon">🌙</span>
+</div>
+
+<h1>✈️ 공항 영어 단어장</h1>
+<p class="subtitle">카드를 클릭하면 예문을 볼 수 있어요</p>
+
+<div class="filter-bar">
+  <button class="filter-btn active" data-cat="all">전체</button>
+  <button class="filter-btn" data-cat="checkin">체크인</button>
+  <button class="filter-btn" data-cat="security">보안검색</button>
+  <button class="filter-btn" data-cat="boarding">탑승</button>
+  <button class="filter-btn" data-cat="baggage">수하물</button>
+  <button class="filter-btn" data-cat="customs">세관/입국</button>
+  <button class="filter-btn" data-cat="general">일반</button>
+</div>
+
+<p class="count" id="count"></p>
+
+<div class="grid" id="grid"></div>
+
+<script>
+const words = [
+  // 체크인
+  { en: "check-in counter", ph: "/tʃek ɪn ˈkaʊntər/", ko: "체크인 카운터", cat: "checkin", ex: "Where is the check-in counter for Korean Air?" },
+  { en: "boarding pass", ph: "/ˈbɔːrdɪŋ pæs/", ko: "탑승권", cat: "checkin", ex: "May I see your boarding pass, please?" },
+  { en: "passport", ph: "/ˈpæspɔːrt/", ko: "여권", cat: "checkin", ex: "Please show me your passport." },
+  { en: "window seat", ph: "/ˈwɪndoʊ siːt/", ko: "창가 좌석", cat: "checkin", ex: "I'd like a window seat, please." },
+  { en: "aisle seat", ph: "/aɪl siːt/", ko: "복도 좌석", cat: "checkin", ex: "Can I get an aisle seat?" },
+  { en: "e-ticket", ph: "/ˈiː tɪkɪt/", ko: "전자 항공권", cat: "checkin", ex: "Here is my e-ticket confirmation." },
+  { en: "overweight baggage", ph: "/ˌoʊvərˈweɪt ˈbægɪdʒ/", ko: "초과 수하물", cat: "checkin", ex: "Your baggage is overweight by 3 kg." },
+  { en: "itinerary", ph: "/aɪˈtɪnəreri/", ko: "여행 일정표", cat: "checkin", ex: "Do you have your travel itinerary?" },
+
+  // 보안검색
+  { en: "security checkpoint", ph: "/sɪˈkjʊərɪti ˈtʃekpɔɪnt/", ko: "보안 검색대", cat: "security", ex: "Please proceed to the security checkpoint." },
+  { en: "metal detector", ph: "/ˈmetl dɪˌtektər/", ko: "금속 탐지기", cat: "security", ex: "Walk through the metal detector, please." },
+  { en: "X-ray machine", ph: "/ˈeks reɪ məˌʃiːn/", ko: "X선 검색기", cat: "security", ex: "Put your bag on the X-ray machine belt." },
+  { en: "liquid restriction", ph: "/ˈlɪkwɪd rɪˌstrɪkʃən/", ko: "액체류 반입 제한", cat: "security", ex: "Liquids over 100ml are not allowed due to liquid restrictions." },
+  { en: "body scanner", ph: "/ˈbɒdi ˌskænər/", ko: "전신 검색기", cat: "security", ex: "Please step into the body scanner." },
+  { en: "remove your shoes", ph: "/rɪˈmuːv jɔːr ʃuːz/", ko: "신발을 벗다", cat: "security", ex: "Please remove your shoes before going through." },
+
+  // 탑승
+  { en: "departure gate", ph: "/dɪˈpɑːrtʃər ɡeɪt/", ko: "출발 게이트", cat: "boarding", ex: "Your departure gate is B12." },
+  { en: "boarding time", ph: "/ˈbɔːrdɪŋ taɪm/", ko: "탑승 시간", cat: "boarding", ex: "Boarding time is 30 minutes before departure." },
+  { en: "final call", ph: "/ˈfaɪnl kɔːl/", ko: "최종 탑승 안내", cat: "boarding", ex: "This is the final call for passengers on flight KE001." },
+  { en: "delayed", ph: "/dɪˈleɪd/", ko: "지연된", cat: "boarding", ex: "Your flight has been delayed by one hour." },
+  { en: "cancelled", ph: "/ˈkænsəld/", ko: "취소된", cat: "boarding", ex: "The flight has been cancelled due to bad weather." },
+  { en: "connecting flight", ph: "/kəˈnektɪŋ flaɪt/", ko: "환승 항공편", cat: "boarding", ex: "I have a connecting flight to Tokyo." },
+  { en: "transit", ph: "/ˈtrænsɪt/", ko: "환승, 경유", cat: "boarding", ex: "I'm in transit to New York." },
+  { en: "overhead bin", ph: "/ˈoʊvərhed bɪn/", ko: "머리 위 짐칸", cat: "boarding", ex: "Please place your bag in the overhead bin." },
+
+  // 수하물
+  { en: "baggage claim", ph: "/ˈbægɪdʒ kleɪm/", ko: "수하물 찾는 곳", cat: "baggage", ex: "Please go to baggage claim area 3." },
+  { en: "checked baggage", ph: "/tʃekt ˈbægɪdʒ/", ko: "위탁 수하물", cat: "baggage", ex: "How many pieces of checked baggage do you have?" },
+  { en: "carry-on bag", ph: "/ˈkæri ɒn bæɡ/", ko: "기내 반입 가방", cat: "baggage", ex: "Your carry-on bag must fit under the seat." },
+  { en: "lost baggage", ph: "/lɒst ˈbægɪdʒ/", ko: "분실 수하물", cat: "baggage", ex: "I'd like to report lost baggage." },
+  { en: "baggage tag", ph: "/ˈbægɪdʒ tæɡ/", ko: "수하물 태그", cat: "baggage", ex: "Please keep your baggage tag as proof." },
+  { en: "fragile", ph: "/ˈfrædʒaɪl/", ko: "깨지기 쉬운", cat: "baggage", ex: "Please mark this as fragile." },
+
+  // 세관/입국
+  { en: "customs declaration", ph: "/ˈkʌstəmz ˌdekləˈreɪʃən/", ko: "세관 신고", cat: "customs", ex: "Do you have anything to declare on your customs declaration?" },
+  { en: "immigration", ph: "/ˌɪmɪˈɡreɪʃən/", ko: "출입국 심사", cat: "customs", ex: "Please proceed to immigration." },
+  { en: "visa", ph: "/ˈviːzə/", ko: "비자", cat: "customs", ex: "May I see your visa, please?" },
+  { en: "purpose of visit", ph: "/ˈpɜːrpəs əv ˈvɪzɪt/", ko: "방문 목적", cat: "customs", ex: "What is the purpose of your visit?" },
+  { en: "duration of stay", ph: "/djʊˈreɪʃən əv steɪ/", ko: "체류 기간", cat: "customs", ex: "What is the duration of your stay?" },
+  { en: "arrival card", ph: "/əˈraɪvəl kɑːrd/", ko: "입국 신고서", cat: "customs", ex: "Please fill out the arrival card." },
+  { en: "duty-free", ph: "/ˌdjuːti ˈfriː/", ko: "면세", cat: "customs", ex: "I bought this at the duty-free shop." },
+  { en: "quarantine", ph: "/ˈkwɒrəntiːn/", ko: "검역", cat: "customs", ex: "All passengers must pass through quarantine." },
+
+  // 일반
+  { en: "departure lounge", ph: "/dɪˈpɑːrtʃər laʊndʒ/", ko: "출발 대기실", cat: "general", ex: "Please wait in the departure lounge." },
+  { en: "terminal", ph: "/ˈtɜːrmɪnl/", ko: "터미널", cat: "general", ex: "Which terminal does my flight depart from?" },
+  { en: "information desk", ph: "/ˌɪnfəˈmeɪʃən desk/", ko: "안내 데스크", cat: "general", ex: "Please ask at the information desk." },
+  { en: "currency exchange", ph: "/ˈkɜːrənsi ɪksˈtʃeɪndʒ/", ko: "환전소", cat: "general", ex: "Where is the currency exchange counter?" },
+  { en: "flight number", ph: "/flaɪt ˈnʌmbər/", ko: "항공편 번호", cat: "general", ex: "What is your flight number?" },
+  { en: "airline", ph: "/ˈɛrlain/", ko: "항공사", cat: "general", ex: "Which airline are you flying with?" },
+  { en: "departure time", ph: "/dɪˈpɑːrtʃər taɪm/", ko: "출발 시간", cat: "general", ex: "What is the departure time of your flight?" },
+  { en: "arrival time", ph: "/əˈraɪvəl taɪm/", ko: "도착 시간", cat: "general", ex: "What is the estimated arrival time?" },
+];
+
+const catClass = {
+  checkin: "cat-checkin",
+  security: "cat-security",
+  boarding: "cat-boarding",
+  baggage: "cat-baggage",
+  customs: "cat-customs",
+  general: "cat-general",
+};
+
+const catLabel = {
+  checkin: "체크인",
+  security: "보안검색",
+  boarding: "탑승",
+  baggage: "수하물",
+  customs: "세관/입국",
+  general: "일반",
+};
+
+let currentCat = "all";
+
+function render(cat) {
+  const grid = document.getElementById("grid");
+  const count = document.getElementById("count");
+  const filtered = cat === "all" ? words : words.filter(w => w.cat === cat);
+  count.textContent = `총 ${filtered.length}개 단어`;
+
+  grid.innerHTML = filtered.map((w, i) => `
+    <div class="card" onclick="this.classList.toggle('open')">
+      <span class="category ${catClass[w.cat]}">${catLabel[w.cat]}</span>
+      <div class="english">${w.en}</div>
+      <div class="phonetic">${w.ph}</div>
+      <div class="korean">${w.ko}</div>
+      <div class="example">"${w.ex}"</div>
+      <span class="toggle-hint">클릭 = 예문</span>
+    </div>
+  `).join("");
+}
+
+document.querySelectorAll(".filter-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    currentCat = btn.dataset.cat;
+    render(currentCat);
+  });
+});
+
+render("all");
+
+// 다크모드 토글
+const toggle = document.getElementById("darkToggle");
+const saved = localStorage.getItem("theme");
+if (saved === "dark") {
+  document.body.classList.add("dark");
+  toggle.checked = true;
+}
+toggle.addEventListener("change", () => {
+  document.body.classList.toggle("dark", toggle.checked);
+  localStorage.setItem("theme", toggle.checked ? "dark" : "light");
+});
+</script>
+</body>
+</html>
