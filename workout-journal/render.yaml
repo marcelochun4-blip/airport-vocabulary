@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: workout-journal
+    runtime: node
+    rootDir: workout-journal
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: ADMIN_PASSWORD
+        generateValue: false
+    disk:
+      name: workout-data
+      mountPath: /data
+      sizeGB: 5

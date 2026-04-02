@@ -6,11 +6,13 @@ const fs = require('fs');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ⚠️ 관리자 비밀번호를 여기서 변경하세요
-const ADMIN_PASSWORD = 'workout2024';
+// 관리자 비밀번호: Render 환경변수 ADMIN_PASSWORD 또는 기본값
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'workout2024';
 
-const DATA_FILE = path.join(__dirname, 'data', 'workouts.json');
-const UPLOADS_DIR = path.join(__dirname, 'uploads');
+// Render 영구 디스크(/data) 또는 로컬 디렉토리 자동 감지
+const DATA_ROOT = fs.existsSync('/data') ? '/data' : path.join(__dirname);
+const DATA_FILE = path.join(DATA_ROOT, 'workouts.json');
+const UPLOADS_DIR = path.join(DATA_ROOT, 'uploads');
 
 // Multer 설정 (사진 업로드)
 const storage = multer.diskStorage({
@@ -112,6 +114,9 @@ app.delete('/api/workouts/:id', (req, res) => {
 app.get('/admin', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
+
+// uploads 디렉토리 없으면 생성
+if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log('');
