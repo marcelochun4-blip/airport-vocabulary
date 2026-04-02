@@ -102,7 +102,7 @@ app.delete('/api/workouts/:id', (req, res) => {
 
   // 사진 파일 삭제
   workout.photos.forEach(photo => {
-    const filePath = path.join(__dirname, photo);
+    const filePath = path.join(UPLOADS_DIR, path.basename(photo));
     if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
   });
 
