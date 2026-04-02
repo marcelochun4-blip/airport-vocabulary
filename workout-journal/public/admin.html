@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>관리자 - 운동 일지</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f0f13;
+      --surface: #1a1a22;
+      --surface2: #22222e;
+      --border: #2e2e3e;
+      --accent: #ff6b35;
+      --accent2: #ff8c5a;
+      --text: #f0f0f5;
+      --muted: #888899;
+      --green: #4ecb71;
+      --red: #ff4b55;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* Login screen */
+    .login-screen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .login-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 40px;
+      width: 100%;
+      max-width: 380px;
+      text-align: center;
+    }
+
+    .login-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+
+    .login-title {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .login-sub {
+      color: var(--muted);
+      font-size: 14px;
+      margin-bottom: 28px;
+    }
+
+    input[type="password"], input[type="text"], input[type="date"],
+    select, textarea {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      padding: 12px 14px;
+      font-size: 15px;
+      transition: border-color 0.2s;
+      outline: none;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--accent);
+    }
+
+    textarea { resize: vertical; min-height: 80px; font-family: inherit; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 24px;
+      border-radius: 10px;
+      border: none;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: white;
+      width: 100%;
+    }
+
+    .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-primary:active { transform: translateY(0); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .btn-danger {
+      background: rgba(255,75,85,0.1);
+      color: var(--red);
+      border: 1px solid rgba(255,75,85,0.2);
+      padding: 6px 14px;
+      font-size: 13px;
+    }
+
+    .btn-danger:hover { background: rgba(255,75,85,0.2); }
+
+    .error-msg {
+      background: rgba(255,75,85,0.1);
+      border: 1px solid rgba(255,75,85,0.3);
+      color: var(--red);
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-top: 12px;
+      display: none;
+    }
+
+    /* Admin layout */
+    .admin-layout { display: none; min-height: 100vh; }
+
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-inner {
+      max-width: 960px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+    }
+
+    .logo {
+      font-size: 18px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo-icon {
+      width: 34px;
+      height: 34px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .view-site-link {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 13px;
+      padding: 6px 14px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      transition: all 0.2s;
+    }
+
+    .view-site-link:hover { color: var(--text); border-color: var(--muted); }
+
+    .logout-btn {
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 13px;
+      padding: 6px;
+    }
+
+    .logout-btn:hover { color: var(--red); }
+
+    main {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 32px 24px;
+      display: grid;
+      grid-template-columns: 1fr 1.5fr;
+      gap: 28px;
+      align-items: start;
+    }
+
+    @media (max-width: 700px) {
+      main { grid-template-columns: 1fr; padding: 20px 16px; }
+    }
+
+    /* Upload form */
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+    }
+
+    .panel-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    /* Drop zone */
+    .drop-zone {
+      border: 2px dashed var(--border);
+      border-radius: 12px;
+      padding: 28px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+
+    .drop-zone:hover, .drop-zone.dragover {
+      border-color: var(--accent);
+      background: rgba(255,107,53,0.05);
+    }
+
+    .drop-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+
+    .drop-icon { font-size: 32px; margin-bottom: 8px; }
+    .drop-text { font-size: 14px; color: var(--muted); }
+    .drop-sub { font-size: 12px; color: var(--muted); margin-top: 4px; opacity: 0.6; }
+
+    /* Preview grid */
+    .preview-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .preview-item {
+      position: relative;
+      aspect-ratio: 1;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .preview-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .preview-remove {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      width: 22px;
+      height: 22px;
+      background: rgba(0,0,0,0.6);
+      border: none;
+      border-radius: 50%;
+      color: white;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Progress */
+    .upload-progress {
+      display: none;
+      margin-top: 14px;
+    }
+
+    .progress-bar {
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 2px;
+      transition: width 0.3s;
+    }
+
+    .progress-text {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 6px;
+      text-align: center;
+    }
+
+    .success-banner {
+      display: none;
+      background: rgba(78,203,113,0.1);
+      border: 1px solid rgba(78,203,113,0.3);
+      color: var(--green);
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 14px;
+      text-align: center;
+      margin-top: 14px;
+    }
+
+    /* Workout list */
+    .workout-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .workout-list-item {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .list-thumb {
+      width: 56px;
+      height: 56px;
+      border-radius: 8px;
+      object-fit: cover;
+      flex-shrink: 0;
+    }
+
+    .list-thumb-placeholder {
+      width: 56px;
+      height: 56px;
+      border-radius: 8px;
+      background: var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+    }
+
+    .list-info { flex: 1; min-width: 0; }
+    .list-date { font-size: 13px; font-weight: 700; color: var(--accent); }
+
+    .list-type {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .list-notes {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 3px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .list-empty {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    select option { background: var(--surface2); }
+
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<!-- 로그인 화면 -->
+<div class="login-screen" id="login-screen">
+  <div class="login-card">
+    <div class="login-icon">🔐</div>
+    <div class="login-title">관리자 로그인</div>
+    <div class="login-sub">운동 일지 관리자 페이지입니다</div>
+    <input type="password" id="password-input" placeholder="비밀번호 입력" onkeydown="if(event.key==='Enter')login()">
+    <div id="login-error" class="error-msg">비밀번호가 틀렸습니다.</div>
+    <br>
+    <button class="btn btn-primary" onclick="login()" id="login-btn">로그인</button>
+  </div>
+</div>
+
+<!-- 관리자 화면 -->
+<div class="admin-layout" id="admin-layout">
+  <header>
+    <div class="header-inner">
+      <div class="logo">
+        <div class="logo-icon">💪</div>
+        <span>운동 일지 관리</span>
+      </div>
+      <div class="header-actions">
+        <a href="/" class="view-site-link">공개 페이지 보기 →</a>
+        <button class="logout-btn" onclick="logout()">로그아웃</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- 업로드 폼 -->
+    <div class="panel">
+      <div class="panel-title">📸 오늘 운동 기록하기</div>
+
+      <div class="form-group">
+        <label class="form-label">날짜</label>
+        <input type="date" id="form-date">
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">운동 종류</label>
+          <select id="form-type">
+            <option>헬스</option>
+            <option>러닝</option>
+            <option>자전거</option>
+            <option>수영</option>
+            <option>요가</option>
+            <option>필라테스</option>
+            <option>등산</option>
+            <option>기타</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">운동 시간</label>
+          <input type="text" id="form-duration" placeholder="예: 1시간 30분">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">메모 (선택)</label>
+        <textarea id="form-notes" placeholder="오늘 운동 내용, 느낀 점 등..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">사진 업로드</label>
+        <div class="drop-zone" id="drop-zone">
+          <input type="file" id="photo-input" multiple accept="image/*" onchange="handleFiles(this.files)">
+          <div class="drop-icon">📷</div>
+          <div class="drop-text">사진을 끌어다 놓거나 클릭해서 선택</div>
+          <div class="drop-sub">JPG, PNG, HEIC · 최대 20MB · 여러 장 선택 가능</div>
+        </div>
+        <div class="preview-grid" id="preview-grid"></div>
+      </div>
+
+      <div class="upload-progress" id="upload-progress">
+        <div class="progress-bar">
+          <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+        </div>
+        <div class="progress-text" id="progress-text">업로드 중...</div>
+      </div>
+
+      <div class="success-banner" id="success-banner">✓ 운동 기록이 저장되었습니다!</div>
+
+      <div id="submit-error" class="error-msg"></div>
+
+      <br>
+      <button class="btn btn-primary" onclick="submitWorkout()" id="submit-btn">
+        저장하기
+      </button>
+    </div>
+
+    <!-- 기록 목록 -->
+    <div class="panel">
+      <div class="panel-title">📋 전체 기록 <span id="total-count" style="font-weight:400;color:var(--muted);font-size:14px;"></span></div>
+      <div class="workout-list" id="workout-list">
+        <div class="list-empty">불러오는 중...</div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+  let adminPassword = '';
+  let selectedFiles = [];
+  let allWorkouts = [];
+
+  // 날짜 기본값 설정
+  document.getElementById('form-date').value = new Date().toISOString().split('T')[0];
+
+  // 드래그앤드롭
+  const dropZone = document.getElementById('drop-zone');
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropZone.classList.remove('dragover');
+    handleFiles(e.dataTransfer.files);
+  });
+
+  function handleFiles(files) {
+    Array.from(files).forEach(file => {
+      if (!file.type.startsWith('image/')) return;
+      selectedFiles.push(file);
+      const reader = new FileReader();
+      reader.onload = e => addPreview(e.target.result, selectedFiles.length - 1);
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function addPreview(src, index) {
+    const grid = document.getElementById('preview-grid');
+    const item = document.createElement('div');
+    item.className = 'preview-item';
+    item.dataset.index = index;
+    item.innerHTML = `
+      <img src="${src}" alt="">
+      <button class="preview-remove" onclick="removePreview(${index})">✕</button>
+    `;
+    grid.appendChild(item);
+  }
+
+  function removePreview(index) {
+    selectedFiles[index] = null;
+    const el = document.querySelector(`.preview-item[data-index="${index}"]`);
+    if (el) el.remove();
+  }
+
+  async function login() {
+    const pwd = document.getElementById('password-input').value;
+    const btn = document.getElementById('login-btn');
+    const err = document.getElementById('login-error');
+
+    if (!pwd) return;
+
+    btn.disabled = true;
+    btn.textContent = '확인 중...';
+    err.style.display = 'none';
+
+    try {
+      const res = await fetch('/api/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: pwd })
+      });
+
+      if (res.ok) {
+        adminPassword = pwd;
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('admin-layout').style.display = 'block';
+        loadWorkouts();
+      } else {
+        err.style.display = 'block';
+      }
+    } catch {
+      err.style.display = 'block';
+      err.textContent = '서버에 연결할 수 없습니다.';
+    }
+
+    btn.disabled = false;
+    btn.textContent = '로그인';
+  }
+
+  function logout() {
+    adminPassword = '';
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('admin-layout').style.display = 'none';
+    document.getElementById('password-input').value = '';
+  }
+
+  async function submitWorkout() {
+    const date = document.getElementById('form-date').value;
+    const type = document.getElementById('form-type').value;
+    const duration = document.getElementById('form-duration').value;
+    const notes = document.getElementById('form-notes').value;
+    const validFiles = selectedFiles.filter(Boolean);
+
+    const btn = document.getElementById('submit-btn');
+    const progressEl = document.getElementById('upload-progress');
+    const progressFill = document.getElementById('progress-fill');
+    const progressText = document.getElementById('progress-text');
+    const successBanner = document.getElementById('success-banner');
+    const errEl = document.getElementById('submit-error');
+
+    successBanner.style.display = 'none';
+    errEl.style.display = 'none';
+
+    btn.disabled = true;
+    btn.innerHTML = '<div class="spinner"></div>';
+
+    if (validFiles.length > 0) {
+      progressEl.style.display = 'block';
+      progressFill.style.width = '10%';
+      progressText.textContent = '사진 업로드 중...';
+    }
+
+    const formData = new FormData();
+    formData.append('password', adminPassword);
+    formData.append('date', date);
+    formData.append('type', type);
+    formData.append('duration', duration);
+    formData.append('notes', notes);
+    validFiles.forEach(f => formData.append('photos', f));
+
+    try {
+      if (validFiles.length > 0) {
+        progressFill.style.width = '60%';
+      }
+
+      const res = await fetch('/api/workouts', { method: 'POST', body: formData });
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.error || '저장 실패');
+
+      progressFill.style.width = '100%';
+      progressText.textContent = '완료!';
+
+      setTimeout(() => {
+        progressEl.style.display = 'none';
+        progressFill.style.width = '0%';
+      }, 800);
+
+      // 폼 초기화
+      document.getElementById('form-notes').value = '';
+      document.getElementById('form-duration').value = '';
+      document.getElementById('form-date').value = new Date().toISOString().split('T')[0];
+      document.getElementById('preview-grid').innerHTML = '';
+      document.getElementById('photo-input').value = '';
+      selectedFiles = [];
+
+      successBanner.style.display = 'block';
+      setTimeout(() => successBanner.style.display = 'none', 3000);
+
+      loadWorkouts();
+    } catch (e) {
+      progressEl.style.display = 'none';
+      errEl.textContent = e.message || '오류가 발생했습니다.';
+      errEl.style.display = 'block';
+    }
+
+    btn.disabled = false;
+    btn.textContent = '저장하기';
+  }
+
+  async function loadWorkouts() {
+    try {
+      const res = await fetch('/api/workouts');
+      allWorkouts = await res.json();
+      renderList();
+    } catch {
+      document.getElementById('workout-list').innerHTML = '<div class="list-empty">불러오기 실패</div>';
+    }
+  }
+
+  function renderList() {
+    const container = document.getElementById('workout-list');
+    document.getElementById('total-count').textContent = `(${allWorkouts.length}개)`;
+
+    if (allWorkouts.length === 0) {
+      container.innerHTML = '<div class="list-empty">아직 기록이 없습니다</div>';
+      return;
+    }
+
+    container.innerHTML = '';
+    allWorkouts.forEach(w => {
+      const item = document.createElement('div');
+      item.className = 'workout-list-item';
+
+      const thumb = w.photos && w.photos.length > 0
+        ? `<img class="list-thumb" src="${w.photos[0]}" alt="">`
+        : `<div class="list-thumb-placeholder">🏋️</div>`;
+
+      const d = new Date(w.date + 'T00:00:00');
+      const dateStr = `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일`;
+
+      item.innerHTML = `
+        ${thumb}
+        <div class="list-info">
+          <div class="list-date">${dateStr}</div>
+          <div class="list-type">${escapeHtml(w.type)}${w.duration ? ' · ' + escapeHtml(w.duration) : ''}${w.photos && w.photos.length > 1 ? ` · 사진 ${w.photos.length}장` : ''}</div>
+          ${w.notes ? `<div class="list-notes">${escapeHtml(w.notes)}</div>` : ''}
+        </div>
+        <button class="btn btn-danger" onclick="deleteWorkout('${w.id}')">삭제</button>
+      `;
+      container.appendChild(item);
+    });
+  }
+
+  async function deleteWorkout(id) {
+    if (!confirm('이 운동 기록을 삭제할까요?')) return;
+
+    try {
+      const res = await fetch(`/api/workouts/${id}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: adminPassword })
+      });
+      if (res.ok) loadWorkouts();
+      else alert('삭제 실패');
+    } catch {
+      alert('오류가 발생했습니다.');
+    }
+  }
+
+  function escapeHtml(s) {
+    if (!s) return '';
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // 비밀번호 입력창 포커스
+  document.getElementById('password-input').focus();
+</script>
+</body>
+</html>

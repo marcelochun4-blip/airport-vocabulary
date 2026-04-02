@@ -1,0 +1,13 @@
+{
+  "name": "workout-journal",
+  "version": "1.0.0",
+  "description": "가족 운동 일지 공유 사이트",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "multer": "^2.1.1"
+  }
+}
