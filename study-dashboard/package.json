@@ -1,0 +1,14 @@
+{
+  "name": "study-dashboard",
+  "version": "1.0.0",
+  "description": "태린이 학습계획 대시보드",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "uuid": "^9.0.0"
+  }
+}

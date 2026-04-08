@@ -1,0 +1,1190 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>태린이 학습 대시보드</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #f0f4ff;
+  --surface: #ffffff;
+  --surface2: #f8faff;
+  --border: #e2e8f0;
+  --primary: #6366f1;
+  --primary-light: #eef2ff;
+  --accent: #f59e0b;
+  --success: #10b981;
+  --danger: #ef4444;
+  --text: #1e293b;
+  --muted: #64748b;
+  --radius: 12px;
+  --shadow: 0 1px 3px rgba(0,0,0,.08), 0 4px 16px rgba(0,0,0,.06);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.08);
+}
+
+body {
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* Header */
+.app-header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  height: 64px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: var(--shadow-sm);
+}
+.app-logo {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+.app-logo span { font-size: 24px; }
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--bg);
+  border-radius: 10px;
+  padding: 4px;
+}
+.tab-btn {
+  padding: 8px 18px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all .15s;
+  white-space: nowrap;
+}
+.tab-btn.active {
+  background: var(--surface);
+  color: var(--primary);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Main content */
+.main { max-width: 1200px; margin: 0 auto; padding: 24px; }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* --- CALENDAR TAB --- */
+.cal-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.cal-toolbar h2 { font-size: 20px; font-weight: 700; flex: 1; }
+.view-toggle {
+  display: flex;
+  background: var(--surface);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+.view-btn {
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all .15s;
+}
+.view-btn.active { background: var(--primary); color: #fff; }
+
+.nav-btn {
+  width: 36px; height: 36px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .15s;
+  color: var(--text);
+}
+.nav-btn:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+.today-btn {
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all .15s;
+}
+.today-btn:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+/* Monthly grid */
+.cal-grid { background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+.cal-head {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background: var(--primary);
+}
+.cal-head-cell {
+  padding: 12px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  opacity: .9;
+}
+.cal-head-cell:first-child { color: #fca5a5; opacity: 1; }
+.cal-head-cell:last-child { color: #a5b4fc; opacity: 1; }
+
+.cal-body { display: grid; grid-template-columns: repeat(7, 1fr); }
+.cal-cell {
+  min-height: 110px;
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 6px;
+  position: relative;
+  transition: background .1s;
+}
+.cal-cell:nth-child(7n) { border-right: none; }
+.cal-cell.other-month { background: var(--surface2); }
+.cal-cell.today { background: #eef2ff; }
+.cal-cell.today .day-num { background: var(--primary); color: #fff; }
+
+.cal-cell.drag-over { background: #eef2ff; outline: 2px dashed var(--primary); outline-offset: -2px; }
+
+.day-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.day-num.sun { color: #ef4444; }
+.day-num.sat { color: #6366f1; }
+
+.add-plan-btn {
+  position: absolute;
+  top: 6px; right: 6px;
+  width: 20px; height: 20px;
+  border: none;
+  background: var(--primary-light);
+  color: var(--primary);
+  border-radius: 50%;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  transition: all .15s;
+}
+.cal-cell:hover .add-plan-btn { display: flex; }
+.add-plan-btn:hover { background: var(--primary); color: #fff; }
+
+/* Plan cards */
+.plan-card {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 6px;
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  margin-bottom: 3px;
+  cursor: grab;
+  user-select: none;
+  color: #fff;
+  transition: opacity .15s, transform .15s;
+  position: relative;
+}
+.plan-card:active { cursor: grabbing; }
+.plan-card.dragging { opacity: .4; }
+.plan-card.completed { opacity: .55; text-decoration: line-through; }
+
+.plan-check {
+  width: 13px; height: 13px;
+  border-radius: 3px;
+  border: 1.5px solid rgba(255,255,255,.7);
+  flex-shrink: 0;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .15s;
+  background: transparent;
+}
+.plan-check.done { background: rgba(255,255,255,.9); }
+.plan-check.done::after { content: '✓'; font-size: 9px; color: var(--text); font-weight: 800; }
+
+.plan-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.plan-del {
+  opacity: 0;
+  background: none;
+  border: none;
+  color: rgba(255,255,255,.8);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 0 2px;
+  line-height: 1;
+  transition: opacity .15s;
+}
+.plan-card:hover .plan-del { opacity: 1; }
+
+/* Weekly view */
+.week-grid { background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+.week-head {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background: var(--primary);
+}
+.week-head-cell {
+  padding: 14px 10px;
+  text-align: center;
+  color: #fff;
+}
+.week-head-cell .wday { font-size: 12px; font-weight: 700; opacity: .8; }
+.week-head-cell .wdate {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; border-radius: 50%;
+  font-size: 16px; font-weight: 700; margin-top: 4px;
+}
+.week-head-cell.today-col .wdate { background: rgba(255,255,255,.25); }
+.week-head-cell:first-child { color: #fca5a5; }
+.week-head-cell:last-child { color: #a5b4fc; }
+
+.week-body { display: grid; grid-template-columns: repeat(7, 1fr); min-height: 300px; }
+.week-cell {
+  border-right: 1px solid var(--border);
+  padding: 10px 8px;
+  min-height: 200px;
+  transition: background .1s;
+}
+.week-cell:last-child { border-right: none; }
+.week-cell.today-col { background: #eef2ff; }
+.week-cell.drag-over { background: #eef2ff; outline: 2px dashed var(--primary); outline-offset: -2px; }
+.week-add-btn {
+  width: 100%;
+  padding: 6px;
+  border: 1.5px dashed var(--border);
+  background: transparent;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 12px;
+  color: var(--muted);
+  cursor: pointer;
+  margin-top: 6px;
+  transition: all .15s;
+}
+.week-add-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+
+/* --- DASHBOARD TAB --- */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  margin-bottom: 24px;
+}
+.stat-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: var(--shadow);
+}
+.stat-card h3 { font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 12px; }
+
+.streak-display {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.streak-icon { font-size: 48px; line-height: 1; }
+.streak-num { font-size: 56px; font-weight: 800; color: var(--accent); line-height: 1; }
+.streak-label { font-size: 16px; font-weight: 600; color: var(--muted); margin-top: 4px; }
+
+.progress-wrap { margin-top: 4px; }
+.progress-nums { display: flex; justify-content: space-between; margin-bottom: 8px; }
+.progress-nums .big { font-size: 36px; font-weight: 800; color: var(--text); }
+.progress-nums .total { font-size: 16px; font-weight: 600; color: var(--muted); align-self: flex-end; margin-bottom: 4px; }
+.progress-bar {
+  height: 10px;
+  background: var(--border);
+  border-radius: 99px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--success), #34d399);
+  border-radius: 99px;
+  transition: width .4s ease;
+}
+.modified-warn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 8px;
+  font-size: 12px;
+  color: #f59e0b;
+  font-weight: 600;
+}
+
+.rate-big { font-size: 48px; font-weight: 800; line-height: 1; }
+.rate-big.green { color: var(--success); }
+.rate-big.amber { color: var(--accent); }
+.rate-big.red { color: var(--danger); }
+.rate-sub { font-size: 14px; color: var(--muted); margin-top: 4px; }
+
+/* Subject stats */
+.subject-stats { background: var(--surface); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); margin-bottom: 20px; }
+.subject-stats h3 { font-size: 16px; font-weight: 700; margin-bottom: 16px; }
+.subject-row {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 10px;
+}
+.subject-row-name { width: 90px; font-size: 13px; font-weight: 600; flex-shrink: 0; }
+.subject-bar-wrap { flex: 1; height: 8px; background: var(--border); border-radius: 99px; overflow: hidden; }
+.subject-bar-fill { height: 100%; border-radius: 99px; transition: width .4s; }
+.subject-row-count { width: 50px; text-align: right; font-size: 12px; color: var(--muted); font-weight: 600; flex-shrink: 0; }
+
+/* Heatmap */
+.heatmap-wrap { background: var(--surface); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); }
+.heatmap-wrap h3 { font-size: 16px; font-weight: 700; margin-bottom: 16px; }
+.heatmap-grid { display: flex; flex-wrap: wrap; gap: 4px; }
+.heatmap-cell {
+  width: 16px; height: 16px; border-radius: 3px;
+  background: var(--border);
+  cursor: default;
+  position: relative;
+  transition: transform .1s;
+}
+.heatmap-cell:hover { transform: scale(1.3); z-index: 1; }
+.heatmap-cell[title]:hover::after {
+  content: attr(title);
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--text);
+  color: #fff;
+  font-size: 11px;
+  white-space: nowrap;
+  padding: 3px 6px;
+  border-radius: 4px;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* --- SUBJECTS TAB --- */
+.subjects-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.subjects-header h2 { font-size: 20px; font-weight: 700; }
+.btn-primary {
+  padding: 10px 20px;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .15s;
+  display: flex; align-items: center; gap: 6px;
+}
+.btn-primary:hover { background: #4f46e5; }
+
+.level-section { margin-bottom: 24px; }
+.level-label { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 10px; }
+.subjects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+.subject-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: var(--shadow-sm);
+  border: 2px solid transparent;
+  display: flex; align-items: center; gap: 12px;
+  transition: all .15s;
+}
+.subject-card:hover { box-shadow: var(--shadow); }
+.subject-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+.subject-card-name { flex: 1; font-size: 15px; font-weight: 600; }
+.subject-actions { display: flex; gap: 4px; }
+.icon-btn {
+  width: 28px; height: 28px;
+  border: none; background: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--muted);
+  transition: all .15s;
+}
+.icon-btn:hover { background: var(--bg); color: var(--text); }
+.icon-btn.danger:hover { background: #fee2e2; color: var(--danger); }
+
+/* Modal */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(15,23,42,.5);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s;
+  backdrop-filter: blur(4px);
+}
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+.modal {
+  background: var(--surface);
+  border-radius: 16px;
+  padding: 28px;
+  width: 400px;
+  max-width: 95vw;
+  box-shadow: 0 20px 60px rgba(0,0,0,.2);
+  transform: scale(.95) translateY(-10px);
+  transition: transform .2s;
+}
+.modal-overlay.open .modal { transform: scale(1) translateY(0); }
+.modal h3 { font-size: 18px; font-weight: 700; margin-bottom: 20px; }
+.form-group { margin-bottom: 16px; }
+.form-group label { display: block; font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
+.form-group input, .form-group select {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--text);
+  transition: border-color .15s;
+  background: var(--surface);
+}
+.form-group input:focus, .form-group select:focus { outline: none; border-color: var(--primary); }
+.color-preview {
+  width: 32px; height: 32px;
+  border-radius: 6px;
+  border: 1.5px solid var(--border);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.color-row { display: flex; gap: 8px; align-items: center; }
+.modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+.btn-cancel {
+  flex: 1; padding: 10px; border: 1.5px solid var(--border);
+  background: transparent; border-radius: 8px;
+  font-family: inherit; font-size: 14px; font-weight: 600;
+  color: var(--muted); cursor: pointer; transition: all .15s;
+}
+.btn-cancel:hover { background: var(--bg); }
+.btn-save {
+  flex: 2; padding: 10px;
+  background: var(--primary); color: #fff;
+  border: none; border-radius: 8px;
+  font-family: inherit; font-size: 14px; font-weight: 700;
+  cursor: pointer; transition: all .15s;
+}
+.btn-save:hover { background: #4f46e5; }
+
+/* Subject chips in modal */
+.subject-chip-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  max-height: 240px;
+  overflow-y: auto;
+  padding: 2px;
+}
+.subject-chip {
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  color: #fff;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all .15s;
+}
+.subject-chip:hover { transform: scale(1.04); }
+.subject-chip.selected { border-color: var(--text); box-shadow: 0 0 0 2px rgba(0,0,0,.2); }
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
+  background: var(--text); color: #fff;
+  padding: 10px 20px; border-radius: 8px;
+  font-size: 14px; font-weight: 600;
+  opacity: 0; transition: all .3s;
+  z-index: 2000; pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* Legend */
+.legend { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.legend-chip {
+  display: flex; align-items: center; gap: 5px;
+  padding: 3px 10px; border-radius: 99px;
+  font-size: 11px; font-weight: 600; color: #fff;
+}
+.legend-dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,.6); }
+
+@media (max-width: 640px) {
+  .main { padding: 12px; }
+  .app-header { padding: 0 12px; gap: 10px; }
+  .app-logo span { display: none; }
+  .cal-cell { min-height: 70px; padding: 3px; }
+  .day-num { width: 20px; height: 20px; font-size: 11px; }
+  .plan-card { font-size: 9px; padding: 2px 4px; }
+  .dashboard-grid { grid-template-columns: 1fr; }
+  .subjects-grid { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="app-logo">
+    <span>📖</span> 태린이 학습 플래너
+  </div>
+  <nav class="tabs">
+    <button class="tab-btn active" onclick="switchTab('calendar')">📅 캘린더</button>
+    <button class="tab-btn" onclick="switchTab('dashboard')">📊 대시보드</button>
+    <button class="tab-btn" onclick="switchTab('subjects')">📚 교과목</button>
+  </nav>
+</header>
+
+<main class="main">
+
+  <!-- CALENDAR TAB -->
+  <div id="tab-calendar" class="tab-content active">
+    <div class="cal-toolbar">
+      <button class="nav-btn" onclick="navigate(-1)">‹</button>
+      <h2 id="cal-title"></h2>
+      <button class="nav-btn" onclick="navigate(1)">›</button>
+      <button class="today-btn" onclick="goToday()">오늘</button>
+      <div class="view-toggle">
+        <button class="view-btn active" id="btn-monthly" onclick="setView('monthly')">월간</button>
+        <button class="view-btn" id="btn-weekly" onclick="setView('weekly')">주간</button>
+      </div>
+    </div>
+    <div id="legend" class="legend"></div>
+    <div id="calendar"></div>
+  </div>
+
+  <!-- DASHBOARD TAB -->
+  <div id="tab-dashboard" class="tab-content">
+    <div class="dashboard-grid">
+      <div class="stat-card">
+        <h3>🔥 연속 달성 스트릭</h3>
+        <div class="streak-display">
+          <div class="streak-icon">🔥</div>
+          <div>
+            <div class="streak-num" id="streak-num">0</div>
+            <div class="streak-label">일 연속</div>
+          </div>
+        </div>
+        <div id="streak-msg" style="margin-top:10px;font-size:13px;color:var(--muted)"></div>
+      </div>
+
+      <div class="stat-card">
+        <h3>📋 오늘의 진행률</h3>
+        <div class="progress-wrap">
+          <div class="progress-nums">
+            <div class="big" id="today-done">0</div>
+            <div class="total" id="today-total">/ 0 개</div>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" id="today-bar" style="width:0%"></div></div>
+          <div id="modified-warn" class="modified-warn" style="display:none">⚠️ 오늘 계획이 수정/삭제되어 스트릭 미적용</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <h3>📈 최근 7일 달성율</h3>
+        <div class="rate-big" id="week7-rate">0%</div>
+        <div class="rate-sub">지난 7일 완료 비율</div>
+      </div>
+
+      <div class="stat-card">
+        <h3>📅 이번 달 달성율</h3>
+        <div class="rate-big" id="month-rate">0%</div>
+        <div class="rate-sub" id="month-label">이번 달 완료 비율</div>
+      </div>
+    </div>
+
+    <div class="subject-stats">
+      <h3>📚 교과목별 달성 현황</h3>
+      <div id="subject-stats-list"></div>
+    </div>
+
+    <div class="heatmap-wrap">
+      <h3>🗓️ 달성 히트맵</h3>
+      <div class="heatmap-grid" id="heatmap"></div>
+      <div style="display:flex;gap:6px;align-items:center;margin-top:10px;font-size:12px;color:var(--muted)">
+        <span>적음</span>
+        <div style="width:12px;height:12px;border-radius:2px;background:#e2e8f0"></div>
+        <div style="width:12px;height:12px;border-radius:2px;background:#bbf7d0"></div>
+        <div style="width:12px;height:12px;border-radius:2px;background:#4ade80"></div>
+        <div style="width:12px;height:12px;border-radius:2px;background:#16a34a"></div>
+        <span>많음</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUBJECTS TAB -->
+  <div id="tab-subjects" class="tab-content">
+    <div class="subjects-header">
+      <h2>교과목 관리</h2>
+      <button class="btn-primary" onclick="openSubjectModal()">＋ 교과목 추가</button>
+    </div>
+    <div id="subjects-list"></div>
+  </div>
+
+</main>
+
+<!-- Add Plan Modal -->
+<div class="modal-overlay" id="plan-modal">
+  <div class="modal">
+    <h3 id="plan-modal-title">공부 계획 추가</h3>
+    <div class="form-group">
+      <label>날짜</label>
+      <input type="date" id="plan-date">
+    </div>
+    <div class="form-group">
+      <label>교과목 선택</label>
+      <div class="subject-chip-grid" id="subject-chip-grid"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closePlanModal()">취소</button>
+      <button class="btn-save" onclick="savePlan()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- Subject Modal -->
+<div class="modal-overlay" id="subject-modal">
+  <div class="modal">
+    <h3 id="subject-modal-title">교과목 추가</h3>
+    <div class="form-group">
+      <label>교과목 이름</label>
+      <input type="text" id="subject-name" placeholder="예: Math, ICT-1 ...">
+    </div>
+    <div class="form-group">
+      <label>색상</label>
+      <div class="color-row">
+        <input type="color" id="subject-color" value="#6366f1" style="width:100%;height:40px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;padding:2px;">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>레벨</label>
+      <select id="subject-level">
+        <option value="1">Level 1 (기초)</option>
+        <option value="2">Level 2 (중급)</option>
+        <option value="3">Level 3 (심화)</option>
+        <option value="4">시험/Exam</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeSubjectModal()">취소</button>
+      <button class="btn-save" onclick="saveSubject()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── State ───────────────────────────────────────────────────────────────────
+let subjects = [];
+let plans = [];
+let viewMode = 'monthly'; // 'monthly' | 'weekly'
+let cursor = new Date();  // month/week reference
+let editingSubjectId = null;
+let planModalDate = null;
+let selectedSubjectId = null;
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+async function init() {
+  await Promise.all([loadSubjects(), loadPlans()]);
+  renderCalendar();
+}
+
+async function loadSubjects() {
+  const r = await fetch('/api/subjects');
+  subjects = await r.json();
+}
+async function loadPlans() {
+  const r = await fetch('/api/plans');
+  plans = await r.json();
+}
+
+// ─── Tabs ─────────────────────────────────────────────────────────────────────
+function switchTab(name) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  event.target.classList.add('active');
+  if (name === 'dashboard') renderDashboard();
+  if (name === 'subjects') renderSubjects();
+  if (name === 'calendar') renderCalendar();
+}
+
+// ─── Calendar ─────────────────────────────────────────────────────────────────
+function todayStr() {
+  return new Date().toISOString().slice(0, 10);
+}
+function dateStr(d) {
+  return d.toISOString().slice(0, 10);
+}
+function setView(v) {
+  viewMode = v;
+  document.getElementById('btn-monthly').classList.toggle('active', v === 'monthly');
+  document.getElementById('btn-weekly').classList.toggle('active', v === 'weekly');
+  renderCalendar();
+}
+function navigate(dir) {
+  if (viewMode === 'monthly') {
+    cursor.setMonth(cursor.getMonth() + dir);
+  } else {
+    cursor.setDate(cursor.getDate() + dir * 7);
+  }
+  renderCalendar();
+}
+function goToday() {
+  cursor = new Date();
+  renderCalendar();
+}
+
+function renderCalendar() {
+  renderLegend();
+  if (viewMode === 'monthly') renderMonthly();
+  else renderWeekly();
+}
+
+function renderLegend() {
+  const used = [...new Set(plans.map(p => p.subjectId))];
+  const el = document.getElementById('legend');
+  el.innerHTML = subjects
+    .filter(s => used.includes(s.id))
+    .map(s => `<div class="legend-chip" style="background:${s.color}"><div class="legend-dot"></div>${s.name}</div>`)
+    .join('');
+}
+
+function renderMonthly() {
+  const y = cursor.getFullYear(), m = cursor.getMonth();
+  document.getElementById('cal-title').textContent = `${y}년 ${m + 1}월`;
+
+  const first = new Date(y, m, 1);
+  const last = new Date(y, m + 1, 0);
+  const startDay = first.getDay(); // 0=Sun
+  const cells = [];
+
+  // prev month filler
+  for (let i = 0; i < startDay; i++) {
+    const d = new Date(y, m, -startDay + i + 1);
+    cells.push({ date: dateStr(d), other: true });
+  }
+  // current month
+  for (let d = 1; d <= last.getDate(); d++) {
+    cells.push({ date: `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`, other: false });
+  }
+  // next month filler
+  while (cells.length % 7 !== 0) {
+    const remain = cells.length;
+    const d = new Date(y, m + 1, remain - (startDay + last.getDate()) + 1);
+    cells.push({ date: dateStr(d), other: true });
+  }
+
+  const today = todayStr();
+  const dayNames = ['일','월','화','수','목','금','토'];
+  let html = `<div class="cal-grid">
+    <div class="cal-head">${dayNames.map(n => `<div class="cal-head-cell">${n}</div>`).join('')}</div>
+    <div class="cal-body">`;
+
+  for (const { date, other } of cells) {
+    const dayNum = parseInt(date.split('-')[2]);
+    const dow = new Date(date).getDay();
+    const isToday = date === today;
+    const dayPlans = plans.filter(p => p.date === date);
+    const dowClass = dow === 0 ? 'sun' : dow === 6 ? 'sat' : '';
+    html += `<div class="cal-cell${other ? ' other-month' : ''}${isToday ? ' today' : ''}"
+      data-date="${date}"
+      ondragover="onDragOver(event,this)" ondragleave="onDragLeave(this)" ondrop="onDrop(event,'${date}')">
+      <span class="day-num ${dowClass}">${dayNum}</span>
+      <button class="add-plan-btn" onclick="openPlanModal('${date}')" title="계획 추가">＋</button>
+      ${dayPlans.map(p => planCardHtml(p)).join('')}
+    </div>`;
+  }
+  html += '</div></div>';
+  document.getElementById('calendar').innerHTML = html;
+}
+
+function renderWeekly() {
+  // Monday-based week
+  const d = new Date(cursor);
+  const day = d.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  d.setDate(d.getDate() + diff);
+  const weekStart = new Date(d);
+  const weekEnd = new Date(d);
+  weekEnd.setDate(weekEnd.getDate() + 6);
+
+  const y1 = weekStart.getFullYear(), m1 = weekStart.getMonth()+1, d1 = weekStart.getDate();
+  const y2 = weekEnd.getFullYear(), m2 = weekEnd.getMonth()+1, d2 = weekEnd.getDate();
+  document.getElementById('cal-title').textContent =
+    `${y1}년 ${m1}월 ${d1}일 — ${y2}년 ${m2}월 ${d2}일`;
+
+  const today = todayStr();
+  const dayNames = ['월','화','수','목','금','토','일'];
+  const days = [];
+  for (let i = 0; i < 7; i++) {
+    const dd = new Date(weekStart);
+    dd.setDate(dd.getDate() + i);
+    days.push(dateStr(dd));
+  }
+
+  let html = `<div class="week-grid">
+    <div class="week-head">`;
+  for (let i = 0; i < 7; i++) {
+    const date = days[i];
+    const dn = parseInt(date.split('-')[2]);
+    const isT = date === today;
+    html += `<div class="week-head-cell${isT ? ' today-col' : ''}">
+      <div class="wday">${dayNames[i]}</div>
+      <div class="wdate">${dn}</div>
+    </div>`;
+  }
+  html += `</div><div class="week-body">`;
+  for (let i = 0; i < 7; i++) {
+    const date = days[i];
+    const isT = date === today;
+    const dayPlans = plans.filter(p => p.date === date);
+    html += `<div class="week-cell${isT ? ' today-col' : ''}"
+      data-date="${date}"
+      ondragover="onDragOver(event,this)" ondragleave="onDragLeave(this)" ondrop="onDrop(event,'${date}')">
+      ${dayPlans.map(p => planCardHtml(p)).join('')}
+      <button class="week-add-btn" onclick="openPlanModal('${date}')">＋ 추가</button>
+    </div>`;
+  }
+  html += '</div></div>';
+  document.getElementById('calendar').innerHTML = html;
+}
+
+function planCardHtml(plan) {
+  const sub = subjects.find(s => s.id === plan.subjectId);
+  const color = sub ? sub.color : '#94a3b8';
+  const name = sub ? sub.name : '?';
+  return `<div class="plan-card${plan.completed ? ' completed' : ''}"
+    style="background:${color}"
+    draggable="true"
+    data-id="${plan.id}"
+    ondragstart="onDragStart(event,'${plan.id}')">
+    <div class="plan-check${plan.completed ? ' done' : ''}" onclick="toggleComplete('${plan.id}',event)"></div>
+    <span class="plan-name">${name}</span>
+    <button class="plan-del" onclick="deletePlan('${plan.id}',event)" title="삭제">✕</button>
+  </div>`;
+}
+
+// ─── Drag & Drop ──────────────────────────────────────────────────────────────
+let draggingId = null;
+function onDragStart(e, id) {
+  draggingId = id;
+  e.dataTransfer.effectAllowed = 'move';
+  setTimeout(() => {
+    const el = document.querySelector(`[data-id="${id}"]`);
+    if (el) el.classList.add('dragging');
+  }, 0);
+}
+function onDragOver(e, cell) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  cell.classList.add('drag-over');
+}
+function onDragLeave(cell) {
+  cell.classList.remove('drag-over');
+}
+async function onDrop(e, date) {
+  e.preventDefault();
+  const cell = e.currentTarget;
+  cell.classList.remove('drag-over');
+  if (!draggingId) return;
+  const plan = plans.find(p => p.id === draggingId);
+  if (!plan || plan.date === date) { draggingId = null; return; }
+  await fetch(`/api/plans/${draggingId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ date })
+  });
+  draggingId = null;
+  await loadPlans();
+  renderCalendar();
+  showToast('일정이 이동되었습니다');
+}
+
+// ─── Plan actions ─────────────────────────────────────────────────────────────
+async function toggleComplete(id, e) {
+  e.stopPropagation();
+  await fetch(`/api/plans/${id}/complete`, { method: 'PATCH' });
+  await loadPlans();
+  renderCalendar();
+}
+
+async function deletePlan(id, e) {
+  e.stopPropagation();
+  if (!confirm('이 계획을 삭제할까요?')) return;
+  await fetch(`/api/plans/${id}`, { method: 'DELETE' });
+  await loadPlans();
+  renderCalendar();
+  showToast('삭제되었습니다');
+}
+
+// ─── Plan Modal ───────────────────────────────────────────────────────────────
+function openPlanModal(date) {
+  planModalDate = date;
+  selectedSubjectId = null;
+  document.getElementById('plan-date').value = date;
+  document.getElementById('plan-modal-title').textContent = `계획 추가 — ${date}`;
+
+  const grid = document.getElementById('subject-chip-grid');
+  grid.innerHTML = subjects.map(s =>
+    `<div class="subject-chip" style="background:${s.color}" data-sid="${s.id}" onclick="selectChip('${s.id}',this)">${s.name}</div>`
+  ).join('');
+
+  document.getElementById('plan-modal').classList.add('open');
+}
+function closePlanModal() {
+  document.getElementById('plan-modal').classList.remove('open');
+  selectedSubjectId = null;
+}
+function selectChip(id, el) {
+  selectedSubjectId = id;
+  document.querySelectorAll('.subject-chip').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+async function savePlan() {
+  const date = document.getElementById('plan-date').value;
+  if (!date) return alert('날짜를 선택해주세요');
+  if (!selectedSubjectId) return alert('교과목을 선택해주세요');
+  await fetch('/api/plans', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ date, subjectId: selectedSubjectId })
+  });
+  closePlanModal();
+  await loadPlans();
+  renderCalendar();
+  showToast('계획이 추가되었습니다 ✓');
+}
+
+// ─── Dashboard ────────────────────────────────────────────────────────────────
+async function renderDashboard() {
+  const r = await fetch('/api/stats');
+  const stats = await r.json();
+
+  document.getElementById('streak-num').textContent = stats.streak;
+  const msg = document.getElementById('streak-msg');
+  if (stats.streak === 0) msg.textContent = '아직 스트릭이 없어요. 오늘 공부를 완료해보세요! 💪';
+  else if (stats.streak < 7) msg.textContent = `${stats.streak}일 연속 달성 중! 계속 해보아요 🎉`;
+  else msg.textContent = `대단해요! ${stats.streak}일 연속 달성 중! 🏆`;
+
+  document.getElementById('today-done').textContent = stats.todayDone;
+  document.getElementById('today-total').textContent = `/ ${stats.todayTotal} 개`;
+  const pct = stats.todayTotal > 0 ? Math.round((stats.todayDone / stats.todayTotal) * 100) : 0;
+  document.getElementById('today-bar').style.width = pct + '%';
+  document.getElementById('modified-warn').style.display = stats.todayModified ? 'flex' : 'none';
+
+  const w7 = stats.week7Rate;
+  const w7el = document.getElementById('week7-rate');
+  w7el.textContent = w7 + '%';
+  w7el.className = 'rate-big ' + (w7 >= 80 ? 'green' : w7 >= 50 ? 'amber' : 'red');
+
+  const mr = stats.monthRate;
+  const mrel = document.getElementById('month-rate');
+  mrel.textContent = mr + '%';
+  mrel.className = 'rate-big ' + (mr >= 80 ? 'green' : mr >= 50 ? 'amber' : 'red');
+
+  const list = document.getElementById('subject-stats-list');
+  list.innerHTML = stats.subjectStats.map(s => {
+    const pct = s.total > 0 ? Math.round((s.done / s.total) * 100) : 0;
+    return `<div class="subject-row">
+      <div class="subject-row-name">${s.name}</div>
+      <div class="subject-bar-wrap"><div class="subject-bar-fill" style="width:${pct}%;background:${s.color}"></div></div>
+      <div class="subject-row-count">${s.done}/${s.total}</div>
+    </div>`;
+  }).join('');
+
+  renderHeatmap();
+}
+
+function renderHeatmap() {
+  const el = document.getElementById('heatmap');
+  const colors = ['#e2e8f0', '#bbf7d0', '#4ade80', '#16a34a'];
+  const today = new Date();
+  const cells = [];
+  for (let i = 89; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    const ds = dateStr(d);
+    const dayPlans = plans.filter(p => p.date === ds);
+    let level = 0;
+    if (dayPlans.length > 0) {
+      const doneRatio = dayPlans.filter(p => p.completed).length / dayPlans.length;
+      level = doneRatio === 0 ? 1 : doneRatio < 0.5 ? 2 : doneRatio < 1 ? 3 : 4;
+      level = Math.min(level, 3);
+    }
+    const doneCount = dayPlans.filter(p => p.completed).length;
+    cells.push(`<div class="heatmap-cell" style="background:${colors[level]}" title="${ds}: ${doneCount}/${dayPlans.length} 완료"></div>`);
+  }
+  el.innerHTML = cells.join('');
+}
+
+// ─── Subjects ─────────────────────────────────────────────────────────────────
+function renderSubjects() {
+  const levels = { 1: 'Level 1 — 기초', 2: 'Level 2 — 중급', 3: 'Level 3 — 심화', 4: '시험 / Exam' };
+  const byLevel = {};
+  for (const s of subjects) {
+    const lv = s.level || 1;
+    if (!byLevel[lv]) byLevel[lv] = [];
+    byLevel[lv].push(s);
+  }
+  let html = '';
+  for (const lv of [1,2,3,4]) {
+    const arr = byLevel[lv];
+    if (!arr || arr.length === 0) continue;
+    html += `<div class="level-section">
+      <div class="level-label">${levels[lv]}</div>
+      <div class="subjects-grid">
+        ${arr.map(s => `
+          <div class="subject-card" style="border-left:4px solid ${s.color}">
+            <div class="subject-dot" style="background:${s.color}"></div>
+            <div class="subject-card-name">${s.name}</div>
+            <div class="subject-actions">
+              <button class="icon-btn" onclick="editSubject('${s.id}')" title="수정">✎</button>
+              <button class="icon-btn danger" onclick="deleteSubject('${s.id}')" title="삭제">✕</button>
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>`;
+  }
+  document.getElementById('subjects-list').innerHTML = html;
+}
+
+function openSubjectModal(id) {
+  editingSubjectId = id || null;
+  const modal = document.getElementById('subject-modal');
+  if (id) {
+    const s = subjects.find(x => x.id === id);
+    document.getElementById('subject-modal-title').textContent = '교과목 수정';
+    document.getElementById('subject-name').value = s.name;
+    document.getElementById('subject-color').value = s.color;
+    document.getElementById('subject-level').value = s.level || 1;
+  } else {
+    document.getElementById('subject-modal-title').textContent = '교과목 추가';
+    document.getElementById('subject-name').value = '';
+    document.getElementById('subject-color').value = '#6366f1';
+    document.getElementById('subject-level').value = 1;
+  }
+  modal.classList.add('open');
+  setTimeout(() => document.getElementById('subject-name').focus(), 100);
+}
+function closeSubjectModal() {
+  document.getElementById('subject-modal').classList.remove('open');
+  editingSubjectId = null;
+}
+function editSubject(id) { openSubjectModal(id); }
+async function deleteSubject(id) {
+  if (!confirm('이 교과목을 삭제할까요?')) return;
+  await fetch(`/api/subjects/${id}`, { method: 'DELETE' });
+  await loadSubjects();
+  renderSubjects();
+  showToast('삭제되었습니다');
+}
+async function saveSubject() {
+  const name = document.getElementById('subject-name').value.trim();
+  const color = document.getElementById('subject-color').value;
+  const level = parseInt(document.getElementById('subject-level').value);
+  if (!name) return alert('교과목 이름을 입력해주세요');
+
+  if (editingSubjectId) {
+    await fetch(`/api/subjects/${editingSubjectId}`, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, color, level })
+    });
+  } else {
+    await fetch('/api/subjects', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, color, level })
+    });
+  }
+  closeSubjectModal();
+  await loadSubjects();
+  renderSubjects();
+  renderLegend();
+  showToast(editingSubjectId ? '수정되었습니다 ✓' : '교과목이 추가되었습니다 ✓');
+}
+
+// ─── Toast ────────────────────────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+// ─── Keyboard ─────────────────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    closePlanModal();
+    closeSubjectModal();
+  }
+});
+document.getElementById('plan-modal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closePlanModal();
+});
+document.getElementById('subject-modal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeSubjectModal();
+});
+
+init();
+</script>
+</body>
+</html>
