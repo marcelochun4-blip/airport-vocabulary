@@ -425,8 +425,7 @@ body {
 }
 .btn-primary:hover { background: #4f46e5; }
 
-.level-section { margin-bottom: 24px; }
-.level-label { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 10px; }
+
 .subjects-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -710,15 +709,6 @@ body {
       <div class="color-row">
         <input type="color" id="subject-color" value="#6366f1" style="width:100%;height:40px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;padding:2px;">
       </div>
-    </div>
-    <div class="form-group">
-      <label>레벨</label>
-      <select id="subject-level">
-        <option value="1">Level 1 (기초)</option>
-        <option value="2">Level 2 (중급)</option>
-        <option value="3">Level 3 (심화)</option>
-        <option value="4">시험/Exam</option>
-      </select>
     </div>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeSubjectModal()">취소</button>
@@ -1097,32 +1087,17 @@ function renderHeatmap() {
 
 // ─── Subjects ─────────────────────────────────────────────────────────────────
 function renderSubjects() {
-  const levels = { 1: 'Level 1 — 기초', 2: 'Level 2 — 중급', 3: 'Level 3 — 심화', 4: '시험 / Exam' };
-  const byLevel = {};
-  for (const s of subjects) {
-    const lv = s.level || 1;
-    if (!byLevel[lv]) byLevel[lv] = [];
-    byLevel[lv].push(s);
-  }
-  let html = '';
-  for (const lv of [1,2,3,4]) {
-    const arr = byLevel[lv];
-    if (!arr || arr.length === 0) continue;
-    html += `<div class="level-section">
-      <div class="level-label">${levels[lv]}</div>
-      <div class="subjects-grid">
-        ${arr.map(s => `
-          <div class="subject-card" style="border-left:4px solid ${s.color}">
-            <div class="subject-dot" style="background:${s.color}"></div>
-            <div class="subject-card-name">${displayName(s.name)}</div>
-            <div class="subject-actions">
-              <button class="icon-btn" onclick="editSubject('${s.id}')" title="수정">✎</button>
-              <button class="icon-btn danger" onclick="deleteSubject('${s.id}')" title="삭제">✕</button>
-            </div>
-          </div>`).join('')}
-      </div>
-    </div>`;
-  }
+  const html = `<div class="subjects-grid">
+    ${subjects.map(s => `
+      <div class="subject-card" style="border-left:4px solid ${s.color}">
+        <div class="subject-dot" style="background:${s.color}"></div>
+        <div class="subject-card-name">${displayName(s.name)}</div>
+        <div class="subject-actions">
+          <button class="icon-btn" onclick="editSubject('${s.id}')" title="수정">✎</button>
+          <button class="icon-btn danger" onclick="deleteSubject('${s.id}')" title="삭제">✕</button>
+        </div>
+      </div>`).join('')}
+  </div>`;
   document.getElementById('subjects-list').innerHTML = html;
 }
 
@@ -1134,12 +1109,10 @@ function openSubjectModal(id) {
     document.getElementById('subject-modal-title').textContent = '교과목 수정';
     document.getElementById('subject-name').value = s.name;
     document.getElementById('subject-color').value = s.color;
-    document.getElementById('subject-level').value = s.level || 1;
   } else {
     document.getElementById('subject-modal-title').textContent = '교과목 추가';
     document.getElementById('subject-name').value = '';
     document.getElementById('subject-color').value = '#6366f1';
-    document.getElementById('subject-level').value = 1;
   }
   modal.classList.add('open');
   setTimeout(() => document.getElementById('subject-name').focus(), 100);
@@ -1159,18 +1132,17 @@ async function deleteSubject(id) {
 async function saveSubject() {
   const name = document.getElementById('subject-name').value.trim();
   const color = document.getElementById('subject-color').value;
-  const level = parseInt(document.getElementById('subject-level').value);
   if (!name) return alert('교과목 이름을 입력해주세요');
 
   if (editingSubjectId) {
     await fetch(`/api/subjects/${editingSubjectId}`, {
       method: 'PUT', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, color, level })
+      body: JSON.stringify({ name, color })
     });
   } else {
     await fetch('/api/subjects', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, color, level })
+      body: JSON.stringify({ name, color })
     });
   }
   closeSubjectModal();
