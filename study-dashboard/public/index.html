@@ -722,20 +722,9 @@ body {
 
 <script>
 // ─── Helpers ─────────────────────────────────────────────────────────────────
-// "ICT-1" → "ICT", "French-3" → "French", "Math" → "Math"
+// Safety fallback — strip trailing numbers just in case
 function displayName(name) {
   return name.replace(/[-\s]?\d+$/, '').trim();
-}
-// Group subjects by base name for dashboard stats
-function groupedSubjectStats(subjectStats) {
-  const map = {};
-  for (const s of subjectStats) {
-    const base = displayName(s.name);
-    if (!map[base]) map[base] = { name: base, color: s.color, total: 0, done: 0 };
-    map[base].total += s.total;
-    map[base].done += s.done;
-  }
-  return Object.values(map);
 }
 
 // ─── State ───────────────────────────────────────────────────────────────────
@@ -1051,7 +1040,7 @@ async function renderDashboard() {
   mrel.className = 'rate-big ' + (mr >= 80 ? 'green' : mr >= 50 ? 'amber' : 'red');
 
   const list = document.getElementById('subject-stats-list');
-  list.innerHTML = groupedSubjectStats(stats.subjectStats).map(s => {
+  list.innerHTML = stats.subjectStats.map(s => {
     const pct = s.total > 0 ? Math.round((s.done / s.total) * 100) : 0;
     return `<div class="subject-row">
       <div class="subject-row-name">${s.name}</div>

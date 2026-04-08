@@ -13,68 +13,68 @@ const SUBJECTS_FILE = path.join(DATA_ROOT, 'subjects.json');
 const PLANS_FILE = path.join(DATA_ROOT, 'plans.json');
 const STATUS_FILE = path.join(DATA_ROOT, 'daily-status.json');
 
+// ─── Merged subjects (10 total) ───────────────────────────────────────────────
 const SEED_SUBJECTS = [
-  { id: 'math',       name: 'Math',       color: '#6366f1', level: 1 },
-  { id: 'ict-1',      name: 'ICT-1',      color: '#0ea5e9', level: 1 },
-  { id: 'ict-2',      name: 'ICT-2',      color: '#0284c7', level: 2 },
-  { id: 'ict-3',      name: 'ICT-3',      color: '#1d4ed8', level: 3 },
-  { id: 'phys-1',     name: 'Phys-1',     color: '#ef4444', level: 1 },
-  { id: 'phys-2',     name: 'Phys-2',     color: '#dc2626', level: 2 },
-  { id: 'chem-1',     name: 'Chem-1',     color: '#10b981', level: 1 },
-  { id: 'chem-2',     name: 'Chem-2',     color: '#059669', level: 2 },
-  { id: 'bio-1',      name: 'Bio-1',      color: '#22c55e', level: 1 },
-  { id: 'bio-2',      name: 'Bio-2',      color: '#16a34a', level: 2 },
-  { id: 'geo-1',      name: 'Geo-1',      color: '#06b6d4', level: 1 },
-  { id: 'geo-2',      name: 'Geo-2',      color: '#0891b2', level: 2 },
-  { id: 'geo-3',      name: 'Geo-3',      color: '#0e7490', level: 3 },
-  { id: 'biz-1',      name: 'Biz-1',      color: '#f97316', level: 1 },
-  { id: 'biz-2',      name: 'Biz-2',      color: '#ea580c', level: 2 },
-  { id: 'biz-3',      name: 'Biz-3',      color: '#c2410c', level: 3 },
-  { id: 'fre-1',      name: 'Fre-1',      color: '#8b5cf6', level: 1 },
-  { id: 'french-2',   name: 'French-2',   color: '#7c3aed', level: 2 },
-  { id: 'french-3',   name: 'French-3',   color: '#6d28d9', level: 3 },
-  { id: 'french-4',   name: 'French-4',   color: '#5b21b6', level: 3 },
-  { id: 'igcse-exam', name: 'IGCSE Exam', color: '#dc2626', level: 4 },
-  { id: 'exam',       name: 'Exam',       color: '#991b1b', level: 4 },
+  { id: 'math',       name: 'Math',       color: '#6366f1' },
+  { id: 'ict',        name: 'ICT',        color: '#0ea5e9' },
+  { id: 'phys',       name: 'Phys',       color: '#ef4444' },
+  { id: 'chem',       name: 'Chem',       color: '#10b981' },
+  { id: 'bio',        name: 'Bio',        color: '#22c55e' },
+  { id: 'geo',        name: 'Geo',        color: '#06b6d4' },
+  { id: 'biz',        name: 'Biz',        color: '#f97316' },
+  { id: 'french',     name: 'French',     color: '#8b5cf6' },
+  { id: 'igcse-exam', name: 'IGCSE Exam', color: '#dc2626' },
+  { id: 'exam',       name: 'Exam',       color: '#991b1b' },
 ];
 
+// Map old IDs → new merged IDs
+const MERGE_MAP = {
+  'ict-1': 'ict', 'ict-2': 'ict', 'ict-3': 'ict',
+  'phys-1': 'phys', 'phys-2': 'phys',
+  'chem-1': 'chem', 'chem-2': 'chem',
+  'bio-1': 'bio', 'bio-2': 'bio',
+  'geo-1': 'geo', 'geo-2': 'geo', 'geo-3': 'geo',
+  'biz-1': 'biz', 'biz-2': 'biz', 'biz-3': 'biz',
+  'fre-1': 'french', 'french-2': 'french', 'french-3': 'french', 'french-4': 'french',
+};
+
 const SEED_SCHEDULE = [
-  { date: '2026-04-03', subjects: ['ict-1'] },
-  { date: '2026-04-04', subjects: ['ict-1'] },
-  { date: '2026-04-05', subjects: ['chem-1', 'bio-1'] },
-  { date: '2026-04-06', subjects: ['phys-1'] },
+  { date: '2026-04-03', subjects: ['ict'] },
+  { date: '2026-04-04', subjects: ['ict'] },
+  { date: '2026-04-05', subjects: ['chem', 'bio'] },
+  { date: '2026-04-06', subjects: ['phys'] },
   { date: '2026-04-07', subjects: ['math'] },
   { date: '2026-04-08', subjects: ['math'] },
   { date: '2026-04-09', subjects: ['math'] },
   { date: '2026-04-10', subjects: ['math'] },
-  { date: '2026-04-11', subjects: ['geo-1'] },
-  { date: '2026-04-12', subjects: ['biz-1', 'fre-1'] },
+  { date: '2026-04-11', subjects: ['geo'] },
+  { date: '2026-04-12', subjects: ['biz', 'french'] },
   { date: '2026-04-13', subjects: ['math'] },
   { date: '2026-04-14', subjects: ['math'] },
   { date: '2026-04-15', subjects: ['math'] },
   { date: '2026-04-16', subjects: ['math'] },
   { date: '2026-04-17', subjects: ['math'] },
-  { date: '2026-04-18', subjects: ['ict-2'] },
-  { date: '2026-04-19', subjects: ['biz-2', 'french-2'] },
+  { date: '2026-04-18', subjects: ['ict'] },
+  { date: '2026-04-19', subjects: ['biz', 'french'] },
   { date: '2026-04-20', subjects: ['math'] },
   { date: '2026-04-21', subjects: ['math'] },
   { date: '2026-04-22', subjects: ['math'] },
   { date: '2026-04-23', subjects: ['math'] },
   { date: '2026-04-24', subjects: ['math'] },
-  { date: '2026-04-25', subjects: ['geo-2'] },
-  { date: '2026-04-26', subjects: ['chem-2', 'bio-2'] },
+  { date: '2026-04-25', subjects: ['geo'] },
+  { date: '2026-04-26', subjects: ['chem', 'bio'] },
   { date: '2026-04-27', subjects: ['math'] },
   { date: '2026-04-28', subjects: ['igcse-exam'] },
-  { date: '2026-04-29', subjects: ['french-3'] },
-  { date: '2026-04-30', subjects: ['phys-2', 'geo-3'] },
+  { date: '2026-04-29', subjects: ['french'] },
+  { date: '2026-04-30', subjects: ['phys', 'geo'] },
   { date: '2026-05-01', subjects: ['math'] },
   { date: '2026-05-02', subjects: ['math'] },
   { date: '2026-05-03', subjects: ['math'] },
   { date: '2026-05-04', subjects: ['math'] },
   { date: '2026-05-05', subjects: ['igcse-exam'] },
-  { date: '2026-05-06', subjects: ['french-4'] },
-  { date: '2026-05-08', subjects: ['biz-3'] },
-  { date: '2026-05-09', subjects: ['ict-3'] },
+  { date: '2026-05-06', subjects: ['french'] },
+  { date: '2026-05-08', subjects: ['biz'] },
+  { date: '2026-05-09', subjects: ['ict'] },
   { date: '2026-05-11', subjects: ['exam'] },
   { date: '2026-05-12', subjects: ['exam'] },
   { date: '2026-05-13', subjects: ['exam'] },
@@ -90,9 +90,30 @@ function writeJSON(file, data) {
   fs.writeFileSync(file, JSON.stringify(data, null, 2));
 }
 
+// ─── Migration: merge old split subjects into unified ones ────────────────────
+function migrateIfNeeded() {
+  const subjects = readJSON(SUBJECTS_FILE, []);
+  const needsMigration = subjects.some(s => MERGE_MAP[s.id]);
+  if (!needsMigration) return;
+
+  // Replace subjects with merged list
+  writeJSON(SUBJECTS_FILE, SEED_SUBJECTS);
+
+  // Remap plan subjectIds
+  const plans = readJSON(PLANS_FILE, []);
+  const updated = plans.map(p => ({
+    ...p,
+    subjectId: MERGE_MAP[p.subjectId] || p.subjectId
+  }));
+  writeJSON(PLANS_FILE, updated);
+  console.log('Migrated subjects to merged format');
+}
+
 function seedIfNeeded() {
   if (!fs.existsSync(SUBJECTS_FILE)) {
     writeJSON(SUBJECTS_FILE, SEED_SUBJECTS);
+  } else {
+    migrateIfNeeded();
   }
   if (!fs.existsSync(PLANS_FILE)) {
     const now = new Date().toISOString();
@@ -205,7 +226,6 @@ app.patch('/api/plans/:id/complete', (req, res) => {
   plans[i].completed = !plans[i].completed;
   writeJSON(PLANS_FILE, plans);
 
-  // auto-update streak status for that date
   const status = readJSON(STATUS_FILE, {});
   const date = plans[i].date;
   if (!status[date]) status[date] = { modified: false, streakEarned: false };
@@ -221,7 +241,6 @@ app.get('/api/stats', (req, res) => {
   const status = readJSON(STATUS_FILE, {});
   const today = todayStr();
 
-  // streak: walk back from yesterday
   let streak = 0;
   const d = new Date(today);
   d.setDate(d.getDate() - 1);
@@ -234,12 +253,10 @@ app.get('/api/stats', (req, res) => {
     d.setDate(d.getDate() - 1);
   }
 
-  // today progress
   const todayPlans = plans.filter(p => p.date === today);
   const todayDone = todayPlans.filter(p => p.completed).length;
   const todayModified = !!status[today]?.modified;
 
-  // 7-day rate
   const last7 = [];
   const d7 = new Date(today);
   for (let i = 0; i < 7; i++) {
@@ -249,12 +266,10 @@ app.get('/api/stats', (req, res) => {
   const w7plans = plans.filter(p => last7.includes(p.date));
   const w7rate = w7plans.length ? Math.round((w7plans.filter(p => p.completed).length / w7plans.length) * 100) : 0;
 
-  // monthly rate
   const monthPrefix = today.slice(0, 7);
   const mPlans = plans.filter(p => p.date.startsWith(monthPrefix));
   const mRate = mPlans.length ? Math.round((mPlans.filter(p => p.completed).length / mPlans.length) * 100) : 0;
 
-  // per-subject stats
   const subjects = readJSON(SUBJECTS_FILE, []);
   const subjectStats = subjects.map(s => {
     const sp = plans.filter(p => p.subjectId === s.id);
