@@ -12,3 +12,14 @@ services:
       name: workout-data
       mountPath: /data
       sizeGB: 5
+
+  - type: web
+    name: study-dashboard
+    runtime: node
+    rootDir: study-dashboard
+    buildCommand: npm install
+    startCommand: node server.js
+    disk:
+      name: study-data
+      mountPath: /data
+      sizeGB: 1
