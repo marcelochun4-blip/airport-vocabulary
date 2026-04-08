@@ -731,6 +731,23 @@ body {
 <div class="toast" id="toast"></div>
 
 <script>
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+// "ICT-1" → "ICT", "French-3" → "French", "Math" → "Math"
+function displayName(name) {
+  return name.replace(/[-\s]?\d+$/, '').trim();
+}
+// Group subjects by base name for dashboard stats
+function groupedSubjectStats(subjectStats) {
+  const map = {};
+  for (const s of subjectStats) {
+    const base = displayName(s.name);
+    if (!map[base]) map[base] = { name: base, color: s.color, total: 0, done: 0 };
+    map[base].total += s.total;
+    map[base].done += s.done;
+  }
+  return Object.values(map);
+}
+
 // ─── State ───────────────────────────────────────────────────────────────────
 let subjects = [];
 let plans = [];
@@ -801,9 +818,12 @@ function renderCalendar() {
 function renderLegend() {
   const used = [...new Set(plans.map(p => p.subjectId))];
   const el = document.getElementById('legend');
+  // Deduplicate by base name for legend
+  const seen = new Set();
   el.innerHTML = subjects
     .filter(s => used.includes(s.id))
-    .map(s => `<div class="legend-chip" style="background:${s.color}"><div class="legend-dot"></div>${s.name}</div>`)
+    .filter(s => { const base = displayName(s.name); if (seen.has(base)) return false; seen.add(base); return true; })
+    .map(s => `<div class="legend-chip" style="background:${s.color}"><div class="legend-dot"></div>${displayName(s.name)}</div>`)
     .join('');
 }
 
@@ -910,7 +930,7 @@ function renderWeekly() {
 function planCardHtml(plan) {
   const sub = subjects.find(s => s.id === plan.subjectId);
   const color = sub ? sub.color : '#94a3b8';
-  const name = sub ? sub.name : '?';
+  const name = sub ? displayName(sub.name) : '?';
   return `<div class="plan-card${plan.completed ? ' completed' : ''}"
     style="background:${color}"
     draggable="true"
@@ -984,7 +1004,7 @@ function openPlanModal(date) {
 
   const grid = document.getElementById('subject-chip-grid');
   grid.innerHTML = subjects.map(s =>
-    `<div class="subject-chip" style="background:${s.color}" data-sid="${s.id}" onclick="selectChip('${s.id}',this)">${s.name}</div>`
+    `<div class="subject-chip" style="background:${s.color}" data-sid="${s.id}" onclick="selectChip('${s.id}',this)">${displayName(s.name)}</div>`
   ).join('');
 
   document.getElementById('plan-modal').classList.add('open');
@@ -1041,7 +1061,7 @@ async function renderDashboard() {
   mrel.className = 'rate-big ' + (mr >= 80 ? 'green' : mr >= 50 ? 'amber' : 'red');
 
   const list = document.getElementById('subject-stats-list');
-  list.innerHTML = stats.subjectStats.map(s => {
+  list.innerHTML = groupedSubjectStats(stats.subjectStats).map(s => {
     const pct = s.total > 0 ? Math.round((s.done / s.total) * 100) : 0;
     return `<div class="subject-row">
       <div class="subject-row-name">${s.name}</div>
@@ -1094,7 +1114,7 @@ function renderSubjects() {
         ${arr.map(s => `
           <div class="subject-card" style="border-left:4px solid ${s.color}">
             <div class="subject-dot" style="background:${s.color}"></div>
-            <div class="subject-card-name">${s.name}</div>
+            <div class="subject-card-name">${displayName(s.name)}</div>
             <div class="subject-actions">
               <button class="icon-btn" onclick="editSubject('${s.id}')" title="수정">✎</button>
               <button class="icon-btn danger" onclick="deleteSubject('${s.id}')" title="삭제">✕</button>
