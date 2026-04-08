@@ -7,7 +7,7 @@ services:
     startCommand: node server.js
     envVars:
       - key: ADMIN_PASSWORD
-        generateValue: false
+        sync: false
     disk:
       name: workout-data
       mountPath: /data
